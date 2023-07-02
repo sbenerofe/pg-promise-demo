@@ -1,0 +1,32 @@
+const User = require('./user.js');
+const Post = require('./post.js');
+
+module.exports = (sequelize, DataTypes) => {
+  const Jcoin_offers = sequelize.define('Jcoin_offers', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      primaryKey: true,
+    },
+    Jcoin_amount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+  });
+  Jcoin_offers.associate = (models) => {
+    Jcoin_offers.belongsTo(models.User);
+    Jcoin_offers.belongsTo(models.Post);
+  };
+
+  //user that created post
+  User.associate = (models) => {
+    User.hasOne(models.Jcoin_offers);
+  };
+  Post.associate = (models) => {
+    Post.hasOne(models.Jcoin_offers);
+  };
+
+  return Jcoin_offers;
+};

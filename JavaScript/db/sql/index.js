@@ -1,5 +1,5 @@
-const {QueryFile} = require('pg-promise');
-const {join} = require('path');
+const { QueryFile } = require("pg-promise");
+const { join } = require("path");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Criteria for deciding whether to place a particular query into an external SQL file or to
@@ -17,50 +17,50 @@ const {join} = require('path');
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports = {
-    users: {
-        create: sql('users/create.sql'),
-        empty: sql('users/empty.sql'),
-        init: sql('users/init.sql'),
-        drop: sql('users/drop.sql'),
-        add: sql('users/add.sql')
-    },
-    products: {
-        create: sql('products/create.sql'),
-        empty: sql('products/empty.sql'),
-        drop: sql('products/drop.sql'),
-        find: sql('products/find.sql'),
-        add: sql('products/add.sql')
-    }
+  users: {
+    create: sql("users/create.sql"),
+    empty: sql("users/empty.sql"),
+    init: sql("users/init.sql"),
+    drop: sql("users/drop.sql"),
+    add: sql("users/add.sql"),
+    update: sql("users/update.sql"),
+  },
+  products: {
+    create: sql("products/create.sql"),
+    empty: sql("products/empty.sql"),
+    drop: sql("products/drop.sql"),
+    find: sql("products/find.sql"),
+    add: sql("products/add.sql"),
+  },
 };
 
 ///////////////////////////////////////////////
 // Helper for linking to external query files;
 function sql(file) {
+  const fullPath = join(__dirname, file); // generating full path;
 
-    const fullPath = join(__dirname, file); // generating full path;
+  const options = {
+    // minifying the SQL is always advised;
+    // see also option 'compress' in the API;
+    minify: true,
 
-    const options = {
+    // See also property 'params' for two-step template formatting
+  };
 
-        // minifying the SQL is always advised;
-        // see also option 'compress' in the API;
-        minify: true
+  const qf = new QueryFile(fullPath, options);
 
-        // See also property 'params' for two-step template formatting
-    };
+  if (qf.error) {
+    console.log("qj-error = ", qf.error);
+    // Something is wrong with our query file :(
+    // Testing all files through queries can be cumbersome,
+    // so we also report it here, while loading the module:
+    console.error(qf.error);
+  }
 
-    const qf = new QueryFile(fullPath, options);
+  return qf;
 
-    if (qf.error) {
-        // Something is wrong with our query file :(
-        // Testing all files through queries can be cumbersome,
-        // so we also report it here, while loading the module:
-        console.error(qf.error);
-    }
-
-    return qf;
-
-    // See QueryFile API:
-    // http://vitaly-t.github.io/pg-promise/QueryFile.html
+  // See QueryFile API:
+  // http://vitaly-t.github.io/pg-promise/QueryFile.html
 }
 
 ///////////////////////////////////////////////////////////////////

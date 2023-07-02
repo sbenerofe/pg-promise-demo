@@ -8,6 +8,9 @@
     "type": "git",
     "url": "https://github.com/vitaly-t/pg-promise-demo.git"
   },
+  "scripts": {
+    "start": "nodemon JavaScript/index.js"
+  },
   "bugs": {
     "url": "https://github.com/vitaly-t/pg-promise-demo/issues",
     "email": "vitaly.tomilov@gmail.com"
@@ -25,7 +28,9 @@
     "node": ">=14"
   },
   "dependencies": {
+    "dotenv": "^16.3.1",
     "express": "4.18.2",
+    "nodemon": "^2.0.22",
     "pg-monitor": "2.0.0",
     "pg-promise": "11.4.3"
   },

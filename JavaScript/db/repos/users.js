@@ -1,85 +1,63 @@
-const {users: sql} = require('../sql');
+const { users: sql } = require("../sql");
 
-const cs = {}; // Reusable ColumnSet objects.
+const cs = {};
 
-/*
- This repository mixes hard-coded and dynamic SQL, primarily to show a diverse example of using both.
- */
+const createColumnsets = (pgp) => {
+  if (!cs.insert) {
+    const table = new pgp.helpers.TableName({
+      table: "users",
+      schema: "public",
+    });
 
-class UsersRepository {
-    constructor(db, pgp) {
-        this.db = db;
-        this.pgp = pgp;
+    cs.insert = new pgp.helpers.ColumnSet(["name"], { table });
+    cs.update = cs.insert.extend(["?id"]);
+  }
+  return cs;
+};
 
-        // set-up all ColumnSet objects, if needed:
-        createColumnsets(pgp);
-    }
+const UsersRepository = (db, pgp) => {
+  createColumnsets(pgp);
 
-    // Creates the table;
-    create() {
-        return this.db.none(sql.create);
-    }
+  const create = () => db.none(sql.create);
 
-    // Initializes the table with some user records, and return their id-s;
-    init() {
-        return this.db.map(sql.init, [], row => row.id);
-    }
+  const init = () => db.map(sql.init, [], (row) => row.id);
 
-    // Drops the table;
-    drop() {
-        return this.db.none(sql.drop);
-    }
+  const drop = () => db.none(sql.drop);
 
-    // Removes all records from the table;
-    empty() {
-        return this.db.none(sql.empty);
-    }
+  const empty = () => db.none(sql.empty);
 
-    // Adds a new user, and returns the new object;
-    add(name) {
-        return this.db.one(sql.add, name);
-    }
+  const update = (id, username, email, hashed_password) =>
+    db.oneOrNone(sql.update, id, username, email, hashed_password);
 
-    // Tries to delete a user by id, and returns the number of records deleted;
-    remove(id) {
-        return this.db.result('DELETE FROM users WHERE id = $1', +id, r => r.rowCount);
-    }
+  const add = (username, email, hashed_password) =>
+    db.one(sql.add, username, email, hashed_password);
 
-    // Tries to find a user from id;
-    findById(id) {
-        return this.db.oneOrNone('SELECT * FROM users WHERE id = $1', +id);
-    }
+  const remove = (id) =>
+    db.result("DELETE FROM users WHERE id = $1", +id, (r) => r.rowCount);
 
-    // Tries to find a user from name;
-    findByName(name) {
-        return this.db.oneOrNone('SELECT * FROM users WHERE name = $1', name);
-    }
+  const findById = (id) =>
+    db.oneOrNone("SELECT * FROM users WHERE id = $1", +id);
 
-    // Returns all user records;
-    all() {
-        return this.db.any('SELECT * FROM users');
-    }
+  const findByName = (username) =>
+    db.oneOrNone("SELECT * FROM users WHERE username = $1", username);
 
-    // Returns the total number of users;
-    total() {
-        return this.db.one('SELECT count(*) FROM users', [], a => +a.count);
-    }
-}
+  const all = () => db.any("SELECT * FROM users");
 
-//////////////////////////////////////////////////////////
-// Example of statically initializing ColumnSet objects:
+  const total = () => db.one("SELECT count(*) FROM users", [], (a) => +a.count);
 
-function createColumnsets(pgp) {
-    // create all ColumnSet objects only once:
-    if (!cs.insert) {
-        // Type TableName is useful when schema isn't default "public" ,
-        // otherwise you can just pass in a string for the table name.
-        const table = new pgp.helpers.TableName({table: 'users', schema: 'public'});
-
-        cs.insert = new pgp.helpers.ColumnSet(['name'], {table});
-        cs.update = cs.insert.extend(['?id']);
-    }
-    return cs;
-}
+  return {
+    create,
+    init,
+    drop,
+    empty,
+    update,
+    add,
+    remove,
+    findById,
+    findByName,
+    all,
+    total,
+  };
+};
 
 module.exports = UsersRepository;

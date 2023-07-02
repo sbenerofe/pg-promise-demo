@@ -3,23 +3,15 @@
 */
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid (),
-    username VARCHAR(225) NOT NULL UNIQUE,
+    title VARCHAR(225) NOT NULL,
     email VARCHAR(225) NOT NULL UNIQUE,
-    hashed_password VARCHAR(84) NOT NULL,
+    content VARCHAR(10000),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE OR REPLACE FUNCTION update_test_update_at() RETURNS trigger AS $func$
-    BEGIN
-        IF NEW.* != OLD.* THEN NEW.updated_at := CURRENT_TIMESTAMP;
-        END IF;
-        RETURN NEW;
-    END;
-$func$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE TRIGGER update_last_edit
-    BEFORE UPDATE ON users
+    BEFORE UPDATE ON posts
     FOR EACH ROW
     EXECUTE FUNCTION update_test_update_at();
 
